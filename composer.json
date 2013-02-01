@@ -1,8 +1,8 @@
 {
     "name": "Props",
     "type": "library",
-    "description": "Props DI Container",
-    "keywords": [],
+    "description": "Props is a simple DI container that allows retrieving values via custom property and method names",
+    "keywords": ["container", "dependency injection", "di", "di container", "dependency injection container"],
     "license": "MIT",
     "authors": [
         {

@@ -5,11 +5,13 @@ namespace Props\Tests;
 use Props\Factory;
 use Props\Container;
 
-class FactoryTest extends \PHPUnit_Framework_TestCase {
+class FactoryTest extends \PHPUnit_Framework_TestCase
+{
 
     const TEST_CLASS = 'Props\Tests\FactoryTestObject';
 
-    protected function getTestContainer(array $props = array()) {
+    protected function getTestContainer(array $props = array())
+    {
         $di = new Container();
         foreach ($props as $name => $val) {
             $di->{$name} = $val;
@@ -17,7 +19,8 @@ class FactoryTest extends \PHPUnit_Framework_TestCase {
         return $di;
     }
 
-    public function testFactoryClassAndArguments() {
+    public function testFactoryClassAndArguments()
+    {
         $di = $this->getTestContainer();
 
         $fact = new Factory('\\' . self::TEST_CLASS);
@@ -30,7 +33,8 @@ class FactoryTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals(array('one', 2), $obj->args);
     }
 
-    public function testFactoryCallsSetters() {
+    public function testFactoryCallsSetters()
+    {
         $di = $this->getTestContainer(array('bar' => 'Bar'));
 
         $fact = new Factory(self::TEST_CLASS);
@@ -39,7 +43,8 @@ class FactoryTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals(array('setArray' => array(1, 2, 3)), $obj->calls);
     }
 
-    public function testFactoryCanUseResolvedValues() {
+    public function testFactoryCanUseResolvedValues()
+    {
         $di = $this->getTestContainer(array(
             'foo' => 'Foo',
             'bar' => 'Bar',
@@ -61,7 +66,8 @@ class FactoryTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals(array('setBar' => 'Bar'), $obj->calls);
     }
 
-    public function testFactoryRequiresClassNameToResolveToString() {
+    public function testFactoryRequiresClassNameToResolveToString()
+    {
         $di = $this->getTestContainer(array('anArray' => array(1, 2, 3)));
         $fact = new Factory($di->ref('anArray'));
 
@@ -70,9 +76,18 @@ class FactoryTest extends \PHPUnit_Framework_TestCase {
     }
 }
 
-class FactoryTestObject {
+class FactoryTestObject
+{
     public $calls;
     public $args;
-    public function __construct() { $this->args = func_get_args(); }
-    public function __call($name, $args) { $this->calls[$name] = $args[0]; }
+
+    public function __construct()
+    {
+        $this->args = func_get_args();
+    }
+
+    public function __call($name, $args)
+    {
+        $this->calls[$name] = $args[0];
+    }
 }

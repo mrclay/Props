@@ -5,9 +5,11 @@ namespace Props\Tests;
 use Props\Container;
 use Props\Reference;
 
-class ReferenceTest extends \PHPUnit_Framework_TestCase {
+class ReferenceTest extends \PHPUnit_Framework_TestCase
+{
 
-    public function testUnboundReference() {
+    public function testUnboundReference()
+    {
         $di1 = new Container;
         $di1->foo = 'Foo from di1';
         $di2 = new Container();
@@ -18,7 +20,8 @@ class ReferenceTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals('Foo from di2', $ref->resolveValue($di2));
     }
 
-    public function testBoundReference() {
+    public function testBoundReference()
+    {
         $di1 = new Container;
         $di1->foo = 'Foo from di1';
         $di2 = new Container();
@@ -28,9 +31,13 @@ class ReferenceTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals('Foo from di1', $ref->resolveValue($di2));
     }
 
-    public function testUnboundNewReference() {
+    public function testUnboundNewReference()
+    {
         $di = new Container;
-        $di->bar = function () { return new \stdClass(); };
+        $di->bar = function ()
+        {
+            return new \stdClass();
+        };
 
         $ref = new Reference('new_bar()');
         $bar1 = $ref->resolveValue($di);
@@ -40,10 +47,12 @@ class ReferenceTest extends \PHPUnit_Framework_TestCase {
         $this->assertNotSame($bar1, $bar2);
     }
 
-    public function testBoundNewReference() {
+    public function testBoundNewReference()
+    {
         $di = new Container();
-        $di->bar = function () {
-            return (object) array(
+        $di->bar = function ()
+        {
+            return (object)array(
                 'bar' => 'Bar',
             );
         };

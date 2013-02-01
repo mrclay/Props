@@ -18,42 +18,47 @@ namespace Props;
  * </code>
  *
  * @see Container::ref() as shortcut for creating these
+ *
+ * @author Steve Clay <steve@mrclay.org>
  */
-class Reference implements ResolvableInterface {
-
-	/**
-	 * @var string
-	 */
-	protected $name;
-
-	/**
-	 * If set, this reference will always read from this container
-     *
-     * @var Container
-	 */
-	protected $boundContainer;
+class Reference implements ResolvableInterface
+{
 
     /**
-	 * @param string $name Either the name of a key in the container, or new_$name() where $name is the key
-     *                     to a resolvable value.
-	 * @param Container $boundContainer If given, we will always fetch from it.
-	 */
-	public function __construct($name, Container $boundContainer = null) {
-		$this->name = $name;
-		$this->boundContainer = $boundContainer;
-	}
+     * @var string
+     */
+    protected $name;
 
-	/**
-	 * @param Container $container
-	 * @return mixed
-	 */
-	public function resolveValue(Container $container) {
-		if ($this->boundContainer) {
-			$container = $this->boundContainer;
-		}
-		if (0 === strpos($this->name, 'new_') && substr($this->name, -2) === '()') {
-			return $container->{substr($this->name, 0, -2)}();
-		}
-		return $container->{$this->name};
-	}
+    /**
+     * If set, this reference will always read from this container
+     *
+     * @var Container
+     */
+    protected $boundContainer;
+
+    /**
+     * @param string $name Either the name of a key in the container, or new_$name() where $name is the key
+     *                     to a resolvable value.
+     * @param Container $boundContainer If given, we will always fetch from it.
+     */
+    public function __construct($name, Container $boundContainer = null)
+    {
+        $this->name = $name;
+        $this->boundContainer = $boundContainer;
+    }
+
+    /**
+     * @param Container $container
+     * @return mixed
+     */
+    public function resolveValue(Container $container)
+    {
+        if ($this->boundContainer) {
+            $container = $this->boundContainer;
+        }
+        if (0 === strpos($this->name, 'new_') && substr($this->name, -2) === '()') {
+            return $container->{substr($this->name, 0, -2)}();
+        }
+        return $container->{$this->name};
+    }
 }

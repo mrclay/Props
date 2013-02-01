@@ -2,4 +2,9 @@
 
 namespace Props;
 
-class ValueUnresolvableException extends \Exception {}
+/**
+ * @author Steve Clay <steve@mrclay.org>
+ */
+class ValueUnresolvableException extends \Exception
+{
+}

@@ -2,4 +2,9 @@
 
 namespace Props;
 
-class MissingValueException extends \Exception {}
+/**
+ * @author Steve Clay <steve@mrclay.org>
+ */
+class MissingValueException extends \Exception
+{
+}
