@@ -22,17 +22,17 @@ $di = new MyDI;
 $di->aaa; // the IDE recognizes this as an AAA object
 ```
 
-See scripts/example.php for more usage.
+See [scripts/example.php](https://github.com/mrclay/Props/blob/master/scripts/example.php#L15) for more usage.
 
 ## Additional Features
 
  * Property reads are cached, returning the same instance.
- * If `$di->foo` has a "resolvable" object (e.g. Factory, Invoker), then `$di->new_foo()` can be used to resolve a new value.
- * `$di->ref('foo')` returns a "reference" that will read `$di->foo` later, only when the value is needed.
+ * If `$di->foo` has a [resolvable](https://github.com/mrclay/Props/blob/master/src/Props/ResolvableInterface.php#L5) object (e.g. Factory, Invoker), then `$di->new_foo()` can be used to resolve a new value.
+ * `$di->ref('foo')` returns a [reference](https://github.com/mrclay/Props/blob/master/src/Props/Reference.php#L5) that will read `$di->foo` later, only when the value is needed.
  * `$di->ref('new_foo()')` works the same way: the reference will call `$di->new_foo()` later.
  * References can be used in place of arguments in most operations
- * `$di->setFactory('foo', 'Foo')` returns the Factory object, which can be programmed to call methods/set properties after constructing the object
- * Invoker can call a callback to resolve a value, passing in the container.
+ * `$di->setFactory('foo', 'Foo')` returns the [Factory](https://github.com/mrclay/Props/blob/master/src/Props/Factory.php#L5) object, which can be programmed to call methods/set properties after constructing the object
+ * [Invoker](https://github.com/mrclay/Props/blob/master/src/Props/Invoker.php#L5) can call a callback to resolve a value, passing in the container.
  * Closures are auto-wrapped with Invoker
 
 ## Requirements
