@@ -2,6 +2,8 @@
 
 **Props** is a simple DI container that allows retrieving values via custom property and method names. This is not revolutionary but has some nice benefits.
 
+[![Build Status](https://travis-ci.org/mrclay/Props.png)](https://travis-ci.org/mrclay/Props)
+
 Most DI containers have fetch operations like `$di->get('foo')` or `$di['foo']`, which doesn't allow your IDE to know the type of value received, nor offer you any help remembering/typing key names.
 
 With Props, you subclass the container and provide @property PHPDoc declarations for the values that will be available at runtime. This makes the IDE see the container as a plain old class of typed properties, allowing it to offer suggestions of available properties, autocomplete their names, and autocomplete the objects returned. This also gives the IDE much more power when providing static analysis and automated refactoring.
