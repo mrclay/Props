@@ -69,6 +69,23 @@ class Container
     }
 
     /**
+     * Set a value to be later returned as is. You only need to use this if you wish to store
+     * a Closure or something that implements Props\ResolvableInterface.
+     *
+     * @param string $name
+     * @param mixed $value
+     * @throws \InvalidArgumentException
+     */
+    public function setValue($name, $value)
+    {
+        if ($name[0] === '_') {
+            throw new \InvalidArgumentException('Name cannot begin with underscore');
+        }
+        unset($this->_resolvables[$name]);
+        $this->_cache[$name] = $value;
+    }
+
+    /**
      * @param string $name
      */
     public function __unset($name)

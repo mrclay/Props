@@ -5,7 +5,7 @@ require __DIR__ . '/setup-autoloading.php';
 class AAA {}
 class BBB {}
 class CCC {
-    public function __construct(DDD $ddd) {}
+    public function __construct(BBB $bbb) {}
     public function setBbb(BBB $bbb) {}
     public $aaa;
 }
@@ -28,10 +28,10 @@ class MyDI extends \Props\Container {
         $this->ddd = new DDD;
         $this->{'bbb.class'} = 'BBB';
 
-        // set a factory
+        // set a factory, which will construct an object on demand
         $this->aaa = new \Props\Factory('AAA');
 
-        // use it as a reference
+        // alternative factory syntax, and using a reference to specify the class name
         $this->setFactory('bbb1', $this->ref('bbb.class'));
 
         // fetch with a callback
@@ -43,9 +43,9 @@ class MyDI extends \Props\Container {
         };
 
         // more advanced factory
-        $bazArgs = array($this->ref('ddd'));
-        $this->setFactory('ccc', 'CCC', $bazArgs)
-            ->addMethodCall('setBbb', $this->ref('bbb1'))
+        $cccArgs = array($this->ref('new_bbb1()'));
+        $this->setFactory('ccc', 'CCC', $cccArgs)
+            ->addMethodCall('setBbb', $this->ref('bbb2'))
             ->addPropertySet('aaa', $this->ref('aaa'));
 
         // at this point no user objects created, because refs & closures were used
@@ -60,7 +60,8 @@ $di->new_aaa(); // always a freshly-built AAA
 
 $di->bbb1; // factory resolves bar.class, builds a BBB
 $di->bbb2; // invoker calls get_a_bbb()
-$di->bbb3; // invoker executes anon func, returning already-cached bar2 instance
+$di->bbb3; // invoker executes anon func, returning the already-cached $di->bbb2 instance
 
-$di->ccc; // factory creates CCC, passing a DDD to the constructor,
-          // factory calls setBbb() then sets the $foo property
+$di->ccc; // factory creates CCC, passing a new BBB object,
+          // calls setBbb(), passing in $di->bbb2,
+          // and sets the aaa property to $di->aaa

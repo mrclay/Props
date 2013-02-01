@@ -160,6 +160,14 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf(self::TEST_CLASS, $foo);
         $this->assertEquals('bar', $foo->bar);
     }
+
+    public function testContainerSetValue()
+    {
+        $di = new Container();
+        $di->setValue('foo', function () {});
+
+        $this->assertInstanceOf('Closure', $di->foo);
+    }
 }
 
 class ContainerTestObject
