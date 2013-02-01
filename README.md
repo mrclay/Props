@@ -1,8 +1,6 @@
-# Props
+# Props [![Build Status](https://travis-ci.org/mrclay/Props.png)](https://travis-ci.org/mrclay/Props)
 
 **Props** is a simple DI container that allows retrieving values via custom property and method names. This is not revolutionary but has some nice benefits.
-
-[![Build Status](https://travis-ci.org/mrclay/Props.png)](https://travis-ci.org/mrclay/Props)
 
 Most DI containers have fetch operations like `$di->get('foo')` or `$di['foo']`, which doesn't allow your IDE to know the type of value received, nor offer you any help remembering/typing key names.
 
