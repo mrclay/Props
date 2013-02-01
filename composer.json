@@ -1,0 +1,20 @@
+{
+    "name": "Props",
+    "type": "library",
+    "description": "Props DI Container",
+    "keywords": [],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Steve Clay",
+            "email": "steve@mrclay.org",
+            "homepage": "http://www.mrclay.org/"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.3"
+    },
+    "autoload": {
+        "psr-0": { "Props\\": "src/" }
+    }
+}
