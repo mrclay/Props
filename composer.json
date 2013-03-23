@@ -1,5 +1,5 @@
 {
-    "name": "mrclay/Props",
+    "name": "mrclay/props-dic",
     "type": "library",
     "description": "Props is a simple DI container that allows retrieving values via custom property and method names",
     "keywords": ["container", "dependency injection", "di", "di container", "dependency injection container"],
