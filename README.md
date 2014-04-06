@@ -1,10 +1,10 @@
 # Props [![Build Status](https://travis-ci.org/mrclay/Props.png)](https://travis-ci.org/mrclay/Props)
 
-**Props** is a simple DI container that allows retrieving values via custom property and method names. This is not revolutionary but has some nice benefits.
+**Props** is a simple [Dependency Injection](http://www.mrclay.org/2014/04/06/dependency-injection-ask-for-what-you-need/) container that allows retrieving values via custom property and method names. This gives you the benefits of static analysis/code completion via your IDE and other tools in a dynamic, lazy-loading environment.
 
 Most DI containers have fetch operations like `$di->get('foo')` or `$di['foo']`, which doesn't allow your IDE to know the type of value received, nor offer you any help remembering/typing key names.
 
-With Props, you subclass the container and provide @property PHPDoc declarations for the values that will be available at runtime. This makes the IDE see the container as a plain old class of typed properties, allowing it to offer suggestions of available properties, autocomplete their names, and autocomplete the objects returned. This also gives the IDE much more power when providing static analysis and automated refactoring.
+With Props, you subclass the container and provide `@property` PHPDoc declarations for the values that will be available at runtime. This makes the IDE see the container as a plain old class of typed properties, allowing it to offer suggestions of available properties, autocomplete their names, and autocomplete the objects returned. This also gives the IDE much more power when providing static analysis and automated refactoring.
 
 ```php
 <?php
