@@ -155,7 +155,7 @@ class Container
      * Helper to attach and return a factory instance
      *
      * @param string $name
-     * @param string $class
+     * @param string|ResolvableInterface $class
      * @param array $constructorArgs
      * @return Factory
      */
