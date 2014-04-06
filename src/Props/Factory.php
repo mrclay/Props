@@ -5,6 +5,8 @@ namespace Props;
 /**
  * Object that builds an object instance to return it as a value.
  *
+ * @note You should probably just use a Closure.
+ *
  * Resolvable objects such as Reference can be used to determine the classname,
  * constructor arguments, or values to be passed to setter methods.
  *
@@ -15,6 +17,13 @@ namespace Props;
  * $factory = new Factory('Pizza', array('deluxe', $di->ref('cheese')));
  * $factory->addMethodCall('setDough', $di->ref('dough'));
  * $di->pizza = $factory;
+ *
+ * // simpler:
+ * $di->pizza = function (DI $c) {
+ *     $pizza = new Pizza('deluxe', $c->cheese);
+ *     $pizza->setDough($c->dough);
+ *     return $pizza;
+ * };
  * </code>
  *
  * @see Container::setFactory()
