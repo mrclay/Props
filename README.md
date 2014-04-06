@@ -1,39 +1,96 @@
 # Props [![Build Status](https://travis-ci.org/mrclay/Props.png)](https://travis-ci.org/mrclay/Props)
 
-**Props** is a simple [Dependency Injection](http://www.mrclay.org/2014/04/06/dependency-injection-ask-for-what-you-need/) container that allows retrieving values via custom property and method names. This gives you the benefits of static analysis/code completion via your IDE and other tools in a dynamic, lazy-loading environment.
+Most [Dependency Injection](http://www.mrclay.org/2014/04/06/dependency-injection-ask-for-what-you-need/) containers have fetch operations like `$di->get('foo')` or `$di['foo']`, which doesn't allow your IDE to know the type of value received, nor offer you any help remembering/typing key names.
 
-Most DI containers have fetch operations like `$di->get('foo')` or `$di['foo']`, which doesn't allow your IDE to know the type of value received, nor offer you any help remembering/typing key names.
+With **Props**, you subclass the container and provide `@property` PHPDoc declarations for the values that will be available at runtime. This gives you the benefits of static analysis/code completion via your IDE and other tools in a dynamic, lazy-loading environment.
 
-With Props, you subclass the container and provide `@property` PHPDoc declarations for the values that will be available at runtime. This makes the IDE see the container as a plain old class of typed properties, allowing it to offer suggestions of available properties, autocomplete their names, and autocomplete the objects returned. This also gives the IDE much more power when providing static analysis and automated refactoring.
+An example will help:
 
 ```php
-<?php
-
 /**
- * @property-read AAA $aaa
+ * @property-read string $style
+ * @property-read Dough  $dough
+ * @property-read Cheese $cheese
+ * @property-read Pizza  $pizza
+ * @method        Slice  new_slice()
  */
 class MyDI extends \Props\Container {
     public function __construct() {
-        $this->setFactory('aaa', 'AAA');
+        $this->style = 'deluxe';
+
+        $this->dough = function (MyDI $c) {
+            return new Dough();
+        };
+
+        $this->cheese = function (MyDI $c) {
+            return CheeseFactory::getCheese();
+        };
+
+        $this->pizza = function (MyDI $c) {
+            $pizza = new Pizza($c->style, $c->cheese);
+            $pizza->setDough($c->dough);
+        };
+
+        $this->slice = function (MyDI $c) {
+            return $c->pizza->getSlice();
+        };
     }
 }
 
 $di = new MyDI;
-$di->aaa; // the IDE recognizes this as an AAA object
+
+// You can request dependencies in any order. They're resolved as needed.
+
+$di->new_slice(); // This first resolves and caches the cheese, dough, and pizza.
+
+$di->pizza; // Your IDE recognizes this as a Pizza object!
 ```
 
-See [scripts/example.php](https://github.com/mrclay/Props/blob/master/scripts/example.php#L15) for more usage.
+Essentially your IDE sees the container as a plain old class of typed properties, allowing it to offer suggestions of available properties, autocomplete their names, and autocomplete the objects returned. It gives you much more power when providing static analysis and automated refactoring.
 
-## Additional Features
+## Features
 
- * Property reads are cached, returning the same instance.
- * If `$di->foo` has a [resolvable](https://github.com/mrclay/Props/blob/master/src/Props/ResolvableInterface.php#L5) object (e.g. Factory, Invoker), then `$di->new_foo()` can be used to resolve a new value.
- * `$di->ref('foo')` returns a [reference](https://github.com/mrclay/Props/blob/master/src/Props/Reference.php#L5) that will read `$di->foo` later, only when the value is needed.
- * `$di->ref('new_foo()')` works the same way: the reference will call `$di->new_foo()` later.
- * References can be used in place of arguments in most operations
- * `$di->setFactory('foo', 'Foo')` returns the [Factory](https://github.com/mrclay/Props/blob/master/src/Props/Factory.php#L5) object, which can be programmed to call methods/set properties after constructing the object
- * [Invoker](https://github.com/mrclay/Props/blob/master/src/Props/Invoker.php#L5) can call a callback to resolve a value, passing in the container.
- * Closures are auto-wrapped with Invoker
+You can specify dependencies via direct setting:
+
+```php
+$di->aaa = new AAA();
+```
+
+Or, more powerfully, by providing a [resolvable](https://github.com/mrclay/Props/blob/master/src/Props/ResolvableInterface.php#L5) object, like a Closure:
+
+```php
+$di->bbb = function (MyDI $c) {
+    // the container will be passed in
+    return new BBB($c->aaa);
+};
+```
+
+Resolved dependencies are cached, returning the same instance:
+
+```php
+$di->bbb === $di->bbb; // true
+```
+
+If you don't want caching, use `new_PROPERTYNAME()` to fetch a fresh instance:
+
+```php
+$di->new_bbb() !== $di->new_bbb(); // false
+```
+
+You can create a [reference](https://github.com/mrclay/Props/blob/master/src/Props/Reference.php#L5) to another dependency, or even another DI container:
+
+```php
+// this will fetch ->aaa when the reference is resolved
+$ref = $di->ref('aaa');
+
+// used it as an alias
+$di->ccc = $di->ref('aaa');
+
+// referencing another container
+$di2->ccc = $di1->ref('ccc', true);
+```
+
+Besides Closures, you can use an [Invoker](https://github.com/mrclay/Props/blob/master/src/Props/Invoker.php#L5) or [Factory](https://github.com/mrclay/Props/blob/master/src/Props/Factory.php#L5) to specify how to find/build dependencies, but really, anonymous functions are the most readable solution.
 
 ## Requirements
 
