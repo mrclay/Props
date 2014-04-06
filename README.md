@@ -92,6 +92,12 @@ $di2->ccc = $di1->ref('ccc', true);
 
 Besides Closures, you can use an [Invoker](https://github.com/mrclay/Props/blob/master/src/Props/Invoker.php#L5) or [Factory](https://github.com/mrclay/Props/blob/master/src/Props/Factory.php#L5) to specify how to find/build dependencies, but really, anonymous functions are the most readable solution.
 
+## Pimple port
+
+You can probably tell Props is influenced by [Pimple](http://pimple.sensiolabs.org/). If you're used to its API you can switch easily to `Props\Pimple`, which just uses property set/gets instead of ArrayAccess (it passes a port of Pimple's test suite as well). This lets you subclass and add `@property` declarations just like `Props\Container`.
+
+You can see an [example](https://github.com/mrclay/Props/blob/master/scripts/example-pimple.php) that's similar to the Pimple docs.
+
 ## Requirements
 
  * PHP 5.3

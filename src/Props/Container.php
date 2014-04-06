@@ -18,9 +18,12 @@ class Container
     /**
      * @var ResolvableInterface[]
      */
-    protected $_resolvables = array();
+    private $resolvables = array();
 
-    protected $_cache = array();
+    /**
+     * @var array
+     */
+    private $cache = array();
 
     /**
      * Fetch a value.
@@ -31,14 +34,14 @@ class Container
      */
     public function __get($name)
     {
-        if (array_key_exists($name, $this->_cache)) {
-            return $this->_cache[$name];
+        if (array_key_exists($name, $this->cache)) {
+            return $this->cache[$name];
         }
-        if (!isset($this->_resolvables[$name])) {
+        if (!isset($this->resolvables[$name])) {
             throw new MissingValueException("Missing value: $name");
         }
-        $value = $this->_resolvables[$name]->resolveValue($this);
-        $this->_cache[$name] = $value;
+        $value = $this->resolvables[$name]->resolveValue($this);
+        $this->cache[$name] = $value;
         return $value;
     }
 
@@ -54,17 +57,17 @@ class Container
         if ($name[0] === '_') {
             throw new \InvalidArgumentException('Name cannot begin with underscore');
         }
-        unset($this->_cache[$name]);
-        unset($this->_resolvables[$name]);
+        unset($this->cache[$name]);
+        unset($this->resolvables[$name]);
 
         if ($value instanceof \Closure) {
             $value = new Invoker($value);
         }
 
         if ($value instanceof ResolvableInterface) {
-            $this->_resolvables[$name] = $value;
+            $this->resolvables[$name] = $value;
         } else {
-            $this->_cache[$name] = $value;
+            $this->cache[$name] = $value;
         }
     }
 
@@ -81,8 +84,8 @@ class Container
         if ($name[0] === '_') {
             throw new \InvalidArgumentException('Name cannot begin with underscore');
         }
-        unset($this->_resolvables[$name]);
-        $this->_cache[$name] = $value;
+        unset($this->resolvables[$name]);
+        $this->cache[$name] = $value;
     }
 
     /**
@@ -90,8 +93,8 @@ class Container
      */
     public function __unset($name)
     {
-        unset($this->_cache[$name]);
-        unset($this->_resolvables[$name]);
+        unset($this->cache[$name]);
+        unset($this->resolvables[$name]);
     }
 
     /**
@@ -100,7 +103,7 @@ class Container
      */
     public function __isset($name)
     {
-        return isset($this->_resolvables[$name]) || array_key_exists($name, $this->_cache);
+        return isset($this->resolvables[$name]) || array_key_exists($name, $this->cache);
     }
 
     /**
@@ -118,10 +121,10 @@ class Container
             throw new \BadMethodCallException("Method name must begin with 'new_'");
         }
         $name = substr($method, 4);
-        if (!isset($this->_resolvables[$name])) {
+        if (!isset($this->resolvables[$name])) {
             throw new ValueUnresolvableException("Unresolvable value: $name");
         }
-        return $this->_resolvables[$name]->resolveValue($this);
+        return $this->resolvables[$name]->resolveValue($this);
     }
 
     /**
@@ -132,7 +135,7 @@ class Container
      */
     public function isResolvable($name)
     {
-        return isset($this->_resolvables[$name]);
+        return isset($this->resolvables[$name]);
     }
 
     /**
