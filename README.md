@@ -48,7 +48,7 @@ $di->pizza; // Your IDE recognizes this as a Pizza object!
 
 Essentially your IDE sees the container as a plain old class of typed properties, allowing it to offer suggestions of available properties, autocomplete their names, and autocomplete the objects returned. It gives you much more power when providing static analysis and automated refactoring.
 
-## Features
+## Overview
 
 You can specify dependencies via direct setting:
 
@@ -56,7 +56,7 @@ You can specify dependencies via direct setting:
 $di->aaa = new AAA();
 ```
 
-Or, more powerfully, by providing a [resolvable](https://github.com/mrclay/Props/blob/master/src/Props/ResolvableInterface.php#L5) object, like a Closure:
+Or, more powerfully, by providing a [resolvable](https://github.com/mrclay/Props/blob/master/src/Props/ResolvableInterface.php#L5) object (Closures are auto-wrapped as resolvables):
 
 ```php
 $di->bbb = function (MyDI $c) {
@@ -74,7 +74,7 @@ $di->bbb === $di->bbb; // true
 If you don't want caching, use `new_PROPERTYNAME()` to fetch a fresh instance:
 
 ```php
-$di->new_bbb() !== $di->new_bbb(); // false
+$di->new_bbb() === $di->new_bbb(); // false
 ```
 
 You can create a [reference](https://github.com/mrclay/Props/blob/master/src/Props/Reference.php#L5) to another dependency, or even another DI container:
@@ -83,7 +83,7 @@ You can create a [reference](https://github.com/mrclay/Props/blob/master/src/Pro
 // this will fetch ->aaa when the reference is resolved
 $ref = $di->ref('aaa');
 
-// used it as an alias
+// use it as an alias
 $di->ccc = $di->ref('aaa');
 
 // referencing another container
