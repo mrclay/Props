@@ -35,7 +35,6 @@ class Factory implements ResolvableInterface
 
     protected $class;
     protected $arguments;
-    protected $container;
     protected $plan = array();
 
     /**
@@ -103,9 +102,7 @@ class Factory implements ResolvableInterface
      */
     public function resolveValue(Container $container)
     {
-        $this->container = $container;
-
-        $class = $this->_resolve($this->class);
+        $class = $this->_resolve($container, $this->class);
         if (!is_string($class)) {
             throw new ValueUnresolvableException('Needed a class name, but a non-string was resolved');
         }
@@ -118,7 +115,9 @@ class Factory implements ResolvableInterface
             $obj = new $class();
         } else {
             $arguments = array_values($this->arguments);
-            $arguments = array_map(array($this, '_resolve'), $arguments);
+            foreach ($arguments as $i => $arg) {
+                $arguments[$i] = $this->_resolve($container, $arg);
+            }
             $ref = new \ReflectionClass($class);
             $obj = $ref->newInstanceArgs($arguments);
         }
@@ -126,27 +125,25 @@ class Factory implements ResolvableInterface
         foreach ($this->plan as $step) {
             list($type, $name, $value) = $step;
             if ($type === 'setter') {
-                $obj->{$name}($this->_resolve($value));
+                $obj->{$name}($this->_resolve($container, $value));
             } else {
-                $obj->{$name} = $this->_resolve($value);
+                $obj->{$name} = $this->_resolve($container, $value);
             }
         }
-
-        // don't want to keep a reference to the container
-        $this->container = null;
 
         return $obj;
     }
 
     /**
-     * @param mixed $value
+     * @param Container $container
+     * @param mixed     $value
      * @return mixed
      */
-    protected function _resolve($value)
+    protected function _resolve(Container $container, $value)
     {
         if ($value instanceof ResolvableInterface) {
             /* @var ResolvableInterface $value */
-            $value = $value->resolveValue($this->container);
+            $value = $value->resolveValue($container);
         }
         return $value;
     }
