@@ -155,7 +155,7 @@ class Container
     }
 
     /**
-     * Helper to attach and return a factory instance
+     * Helper to attach and return a Props\Factory instance
      *
      * @param string $name
      * @param string|ResolvableInterface $class
