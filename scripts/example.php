@@ -1,6 +1,6 @@
 <?php
 
-require __DIR__ . '/setup-autoloading.php';
+require __DIR__ . '/../vendor/autoload.php';
 
 class AAA {}
 class BBB {}
@@ -29,26 +29,30 @@ class MyDI extends \Props\Container {
         $this->{'bbb.class'} = 'BBB';
 
         // set a factory, which will construct an object on demand
-        $this->aaa = new \Props\Factory('AAA');
+        $this->aaa = function () {
+            return new AAA();
+        };
 
         // alternative factory syntax, and using a reference to specify the class name
-        $this->setFactory('bbb1', $this->ref('bbb.class'));
+        $this->setFactory('bbb1', function (MyDI $c) {
+            return new $c->{'bbb.class'};
+        });
 
         // fetch with a callback
-        $this->bbb2 = new \Props\Invoker('get_a_bbb');
+        $this->setFactory('bbb2', 'get_a_bbb');
 
-        // Closures get auto-wrapped with Invoker
-        $this->bbb3 = function ($di) {
-            return $di->bbb2;
+        // Closures automatically used as factories
+        $this->bbb3 = function (MyDI $c) {
+            return $c->bbb2;
         };
 
         // more advanced factory
-        $cccArgs = array($this->ref('new_bbb1()'));
-        $this->setFactory('ccc', 'CCC', $cccArgs)
-            ->addMethodCall('setBbb', $this->ref('bbb2'))
-            ->addPropertySet('aaa', $this->ref('aaa'));
-
-        // at this point no user objects created, because refs & closures were used
+        $this->ccc = function (MyDI $c) {
+            $val = new CCC($c->bbb1);
+            $val->setBbb($c->bbb2);
+            $val->aaa = $c->aaa;
+            return $val;
+        };
     }
 }
 

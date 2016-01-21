@@ -29,6 +29,7 @@ class MyDI extends \Props\Container {
         $this->pizza = function (MyDI $c) {
             $pizza = new Pizza($c->style, $c->cheese);
             $pizza->setDough($c->dough);
+            return $pizza;
         };
 
         $this->slice = function (MyDI $c) {
@@ -56,13 +57,17 @@ You can specify dependencies via direct setting:
 $di->aaa = new AAA();
 ```
 
-Or, more powerfully, by providing a [resolvable](https://github.com/mrclay/Props/blob/master/src/Props/ResolvableInterface.php#L5) object (Closures are auto-wrapped as resolvables):
+You can specify factories by setting a `Closure`, or by using the `setFactory()` method. These are equivalent:
 
 ```php
 $di->bbb = function (MyDI $c) {
     // the container will be passed in
     return new BBB($c->aaa);
 };
+
+$di->setFactory('bbb', function (MyDI $c) {
+    return new BBB($c->aaa);
+});
 ```
 
 Resolved dependencies are cached, returning the same instance:
@@ -77,20 +82,19 @@ If you don't want caching, use `new_PROPERTYNAME()` to fetch a fresh instance:
 $di->new_bbb() === $di->new_bbb(); // false
 ```
 
-You can create a [reference](https://github.com/mrclay/Props/blob/master/src/Props/Reference.php#L5) to another dependency, or even another DI container:
+Regular value sets do not store a factory, so you may want to check `hasFactory()` before you use `new_PROPERTYNAME()`:
 
 ```php
-// this will fetch ->aaa when the reference is resolved
-$ref = $di->ref('aaa');
+// store a value
+$di->ccc = new CCC();
+$di->hasFactory('ccc'); // false
 
-// use it as an alias
-$di->ccc = $di->ref('aaa');
-
-// referencing another container
-$di2->ccc = $di1->ref('ccc', true);
+// store a factory
+$di->ccc = function () {
+    return new CCC();
+};
+$di->hasFactory('ccc'); // true
 ```
-
-Besides Closures, you can use an [Invoker](https://github.com/mrclay/Props/blob/master/src/Props/Invoker.php#L5) or [Factory](https://github.com/mrclay/Props/blob/master/src/Props/Factory.php#L5) to specify how to find/build dependencies, but really, anonymous functions are the most readable solution.
 
 ## Pimple port
 

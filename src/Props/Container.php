@@ -2,6 +2,8 @@
 
 namespace Props;
 
+use Interop\Container\ContainerInterface;
+
 /**
  * Container holding values which can be resolved upon reading and optionally stored and shared
  * across reads.
@@ -9,16 +11,13 @@ namespace Props;
  * Values are read/set as properties.
  *
  * @note see scripts/example.php
- *
- * @author Steve Clay <steve@mrclay.org>
  */
-class Container
+class Container implements ContainerInterface
 {
-
     /**
-     * @var ResolvableInterface[]
+     * @var callable[]
      */
-    private $resolvables = array();
+    private $factories = array();
 
     /**
      * @var array
@@ -30,19 +29,24 @@ class Container
      *
      * @param string $name
      * @return mixed
-     * @throws MissingValueException
+     * @throws FactoryUncallableException|ValueUnresolvableException|NotFoundException
      */
     public function __get($name)
     {
         if (array_key_exists($name, $this->cache)) {
             return $this->cache[$name];
         }
-        if (!isset($this->resolvables[$name])) {
-            throw new MissingValueException("Missing value: $name");
-        }
-        $value = $this->resolvables[$name]->resolveValue($this);
+        $value = $this->build($name);
         $this->cache[$name] = $value;
         return $value;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function get($name)
+    {
+        return $this->__get($name);
     }
 
     /**
@@ -54,26 +58,18 @@ class Container
      */
     public function __set($name, $value)
     {
-        if ($name[0] === '_') {
-            throw new \InvalidArgumentException('Name cannot begin with underscore');
-        }
-        unset($this->cache[$name]);
-        unset($this->resolvables[$name]);
-
         if ($value instanceof \Closure) {
-            $value = new Invoker($value);
+            $this->setFactory($name, $value);
+            return;
         }
 
-        if ($value instanceof ResolvableInterface) {
-            $this->resolvables[$name] = $value;
-        } else {
-            $this->cache[$name] = $value;
-        }
+        $this->cache[$name] = $value;
+        unset($this->factories[$name]);
     }
 
     /**
      * Set a value to be later returned as is. You only need to use this if you wish to store
-     * a Closure or something that implements Props\ResolvableInterface.
+     * a Closure.
      *
      * @param string $name
      * @param mixed $value
@@ -81,10 +77,7 @@ class Container
      */
     public function setValue($name, $value)
     {
-        if ($name[0] === '_') {
-            throw new \InvalidArgumentException('Name cannot begin with underscore');
-        }
-        unset($this->resolvables[$name]);
+        unset($this->factories[$name]);
         $this->cache[$name] = $value;
     }
 
@@ -94,7 +87,7 @@ class Container
     public function __unset($name)
     {
         unset($this->cache[$name]);
-        unset($this->resolvables[$name]);
+        unset($this->factories[$name]);
     }
 
     /**
@@ -103,7 +96,15 @@ class Container
      */
     public function __isset($name)
     {
-        return isset($this->resolvables[$name]) || array_key_exists($name, $this->cache);
+        return array_key_exists($name, $this->factories) || array_key_exists($name, $this->cache);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function has($name)
+    {
+        return $this->__isset($name);
     }
 
     /**
@@ -112,19 +113,15 @@ class Container
      * @param string $method method name must start with "new_"
      * @param array $args
      * @return mixed
-     * @throws ValueUnresolvableException
-     * @throws \BadMethodCallException
+     * @throws BadMethodCallException
      */
     public function __call($method, $args)
     {
         if (0 !== strpos($method, 'new_')) {
-            throw new \BadMethodCallException("Method name must begin with 'new_'");
+            throw new BadMethodCallException("Method name must begin with 'new_'");
         }
-        $name = substr($method, 4);
-        if (!isset($this->resolvables[$name])) {
-            throw new ValueUnresolvableException("Unresolvable value: $name");
-        }
-        return $this->resolvables[$name]->resolveValue($this);
+
+        return $this->build(substr($method, 4));
     }
 
     /**
@@ -133,39 +130,61 @@ class Container
      * @param string $name
      * @return bool
      */
-    public function isResolvable($name)
+    public function hasFactory($name)
     {
-        return isset($this->resolvables[$name]);
+        return array_key_exists($name, $this->factories);
     }
 
     /**
-     * Helper to get a reference to a value in a container.
+     * Set a factory to generate a value when the container is read.
      *
-     * @param string $name
-     * @param bool $bound if given as true, the reference will always fetch from this container
-     * @return Reference
-     *
-     * @note This function creates unbound refs by default, so that, in the future, if references need to be
-     *       serialized, they will not have refs to the container
+     * @param string   $name     The name of the value
+     * @param callable $callable Factory for the value
+     * @throws FactoryUncallableException
      */
-    public function ref($name, $bound = false)
+    public function setFactory($name, $callable)
     {
-        $cont = $bound ? $this : null;
-        return new Reference($name, $cont);
+        if (!is_callable($callable, true)) {
+            throw new FactoryUncallableException('$factory must appear callable');
+        }
+
+        unset($this->cache[$name]);
+        $this->factories[$name] = $callable;
     }
 
     /**
-     * Helper to attach and return a Props\Factory instance
+     * Build a value
      *
      * @param string $name
-     * @param string|ResolvableInterface $class
-     * @param array $constructorArgs
-     * @return Factory
+     * @return mixed
+     * @throws FactoryUncallableException|ValueUnresolvableException|NotFoundException
      */
-    public function setFactory($name, $class, array $constructorArgs = array())
+    private function build($name)
     {
-        $fact = new Factory($class, $constructorArgs);
-        $this->{$name} = $fact;
-        return $fact;
+        if (!array_key_exists($name, $this->factories)) {
+            throw new NotFoundException("Missing value: $name");
+        }
+
+        $factory = $this->factories[$name];
+
+        if (is_callable($factory)) {
+            try {
+                return call_user_func($factory, $this);
+            } catch (\Exception $e) {
+                throw new ValueUnresolvableException("Factory for '$name' threw an exception.", 0, $e);
+            }
+        }
+
+        $msg = "Factory for '$name' was uncallable";
+        if (is_string($factory)) {
+            $msg .= ": '$factory'";
+        } elseif (is_array($factory)) {
+            if (is_string($factory[0])) {
+                $msg .= ": '{$factory[0]}::{$factory[1]}'";
+            } else {
+                $msg .= ": " . get_class($factory[0]) . "->{$factory[1]}";
+            }
+        }
+        throw new FactoryUncallableException($msg);
     }
 }
