@@ -38,9 +38,7 @@ class MyDI extends \Props\Container {
             return new Dough();
         };
 
-        $this->cheese = function (MyDI $c) {
-            return CheeseFactory::getCheese();
-        };
+        $this->setFactory('cheese', 'CheeseFactory::getCheese');
 
         $this->pizza = function (MyDI $c) {
             $pizza = new Pizza($c->style, $c->cheese);
