@@ -17,3 +17,5 @@ Desktop.ini
 !.htaccess
 !/.gitignore
 !/.travis.yml
+
+/composer.lock

@@ -4,7 +4,7 @@
  */
 
 namespace {
-    require __DIR__ . '/setup-autoloading.php';
+    require __DIR__ . '/../vendor/autoload.php';
 }
 
 namespace PropsExample {

@@ -1,70 +1,109 @@
 <?php
 
-namespace Props\Tests;
-
-use Props\Container;
-use Props\Factory;
+namespace Props;
 
 class ContainerTest extends \PHPUnit_Framework_TestCase
 {
+    const TEST_CLASS = 'Props\ContainerTestObject';
 
-    const TEST_CLASS = 'Props\Tests\ContainerTestObject';
-
-    protected function getTestContainer(array $props = array())
+    public function testBasicInterop()
     {
         $di = new Container();
-        foreach ($props as $name => $val) {
-            $di->{$name} = $val;
-        }
-        return $di;
+        $this->assertInstanceOf('Interop\Container\ContainerInterface', $di);
+
+        $this->assertFalse($di->has('foo'));
+        $di->foo = 'bar';
+        $this->assertTrue($di->has('foo'));
     }
 
-    public function getFoo(Container $di)
-    {
-        return $di->foo;
-    }
-
-    public function testContainerEmpty()
-    {
-        $di = new Container();
-        $this->assertFalse(isset($di->foo));
-    }
-
-    public function testContainerSetNonResolvable()
+    /**
+     * @expectedException \Interop\Container\Exception\NotFoundException
+     */
+    public function testInteropNotFound()
     {
         $di = new Container();
-
-        $di->foo = 'Foo';
-        $this->assertTrue(isset($di->foo));
-        $this->assertFalse($di->isResolvable('foo'));
+        $di->get('foo');
     }
 
-    public function testContainerSetResolvable()
+    /**
+     * @expectedException \Interop\Container\Exception\ContainerException
+     */
+    public function testInteropException1()
     {
         $di = new Container();
-
-        $di->foo = new Factory(self::TEST_CLASS);
-        $this->assertTrue(isset($di->foo));
-        $this->assertTrue($di->isResolvable('foo'));
+        $di->setFactory('foo', null);
     }
 
-    public function testContainerGetMissingValue()
+    /**
+     * @expectedException \Interop\Container\Exception\ContainerException
+     */
+    public function testInteropException2()
     {
         $di = new Container();
-        $this->setExpectedException('Props\MissingValueException');
+        $di->setFactory('foo', function () {
+            throw new \Exception();
+        });
         $di->foo;
     }
 
-    public function testContainerGetNewUnresolvableValue()
+    public function testEmpty()
+    {
+        $di = new Container();
+        $this->assertFalse(isset($di->foo));
+        $this->assertFalse($di->has('foo'));
+    }
+
+    public function testValueSetRemovesFactory()
+    {
+        $di = new Container();
+        $di->foo = function () {
+            return 'Bar';
+        };
+        $di->foo = 'Foo';
+        $this->assertTrue(isset($di->foo));
+        $this->assertFalse($di->hasFactory('foo'));
+    }
+
+    public function testSetResolvable()
+    {
+        $di = new Container();
+        $di->foo = function () {
+            return new ContainerTestObject();
+        };
+
+        $this->assertTrue(isset($di->foo));
+        $this->assertTrue($di->has('foo'));
+        $this->assertTrue($di->hasFactory('foo'));
+    }
+
+    /**
+     * @expectedException \Props\NotFoundException
+     */
+    public function testReadMissingValue()
+    {
+        $di = new Container();
+        $di->foo;
+    }
+
+    /**
+     * @expectedException \Props\NotFoundException
+     */
+    public function testGetMissingValue()
+    {
+        $di = new Container();
+        $di->get('foo');
+    }
+
+    public function testGetNewUnresolvableValue()
     {
         $di = new Container();
         $di->foo = 'Foo';
 
-        $this->setExpectedException('Props\ValueUnresolvableException');
+        $this->setExpectedException('Props\NotFoundException');
         $di->new_foo();
     }
 
-    public function testContainerSetAfterRead()
+    public function testSetAfterRead()
     {
         $di = new Container();
 
@@ -73,20 +112,34 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('Foo2', $di->foo);
     }
 
-    public function testContainerHandlesNullValue()
+    public function testHandlesNullValue()
     {
         $di = new Container();
-
         $di->null = null;
         $this->assertTrue(isset($di->null));
+        $this->assertTrue($di->has('null'));
         $this->assertNull($di->null);
+        $this->assertNull($di->get('null'));
     }
 
-    public function testContainerGetResolvables()
+    public function testFactoryReceivesContainer()
+    {
+        $di = new Container();
+        $di->foo = function () {
+            return func_get_args();
+        };
+        $foo = $di->foo;
+        $this->assertSame($foo[0], $di);
+        $this->assertEquals(count($foo), 1);
+    }
+
+    public function testGetResolvables()
     {
         $di = new Container();
 
-        $di->foo = new Factory(self::TEST_CLASS);
+        $di->foo = function () {
+            return new ContainerTestObject();
+        };
         $foo1 = $di->foo;
         $foo2 = $di->foo;
         $this->assertInstanceOf(self::TEST_CLASS, $foo1);
@@ -100,17 +153,19 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $this->assertNotSame($foo1, $foo3);
     }
 
-    public function testContainerKeyNamespace()
+    public function testKeyNamespace()
     {
         $di = new Container();
-        $di->foo = new Factory(self::TEST_CLASS);
+        $di->foo = function () {
+            return new ContainerTestObject();
+        };
         $di->new_foo = 'Foo';
 
         $this->assertInstanceOf(self::TEST_CLASS, $di->new_foo());
         $this->assertEquals('Foo', $di->new_foo);
     }
 
-    public function testContainerRemove()
+    public function testUnset()
     {
         $di = new Container();
         $di->foo = 'Foo';
@@ -119,41 +174,24 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse(isset($di->foo));
     }
 
-    public function testContainerAccessRemovedValue()
+    public function testAccessUnsetValue()
     {
         $di = new Container();
         $di->foo = 'Foo';
         unset($di->foo);
 
-        $this->setExpectedException('Props\MissingValueException');
+        $this->setExpectedException('Props\NotFoundException');
         $di->foo;
     }
 
-    public function testContainerRef()
-    {
-        $di1 = new Container();
-        $di1->foo = 'Foo1';
-
-        $di2 = new Container();
-        $di2->foo = 'Foo2';
-
-        $unboundFooRef = $di1->ref('foo');
-        $boundFooRef = $di1->ref('foo', true);
-
-        $this->assertInstanceOf('Props\Reference', $unboundFooRef);
-        $this->assertInstanceOf('Props\Reference', $boundFooRef);
-
-        $this->assertEquals('Foo2', $unboundFooRef->resolveValue($di2));
-        $this->assertEquals('Foo1', $boundFooRef->resolveValue($di2));
-    }
-
-    public function testContainerSetFactory()
+    public function testSetFactory()
     {
         $di = new Container();
-
-        $fact = $di->setFactory('foo', self::TEST_CLASS)->addPropertySet('bar', 'bar');
-
-        $this->assertInstanceOf('Props\Factory', $fact);
+        $di->setFactory('foo', function () {
+            $obj = new ContainerTestObject();
+            $obj->bar = 'bar';
+            return $obj;
+        });
 
         $foo = $di->foo;
 
@@ -161,7 +199,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('bar', $foo->bar);
     }
 
-    public function testContainerSetValue()
+    public function testSetValue()
     {
         $di = new Container();
         $di->setValue('foo', function () {});
