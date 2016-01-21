@@ -1,10 +1,26 @@
 # Props [![Build Status](https://travis-ci.org/mrclay/Props.png)](https://travis-ci.org/mrclay/Props)
 
-Most [Dependency Injection](http://www.mrclay.org/2014/04/06/dependency-injection-ask-for-what-you-need/) containers have fetch operations like `$di->get('foo')` or `$di['foo']`, which doesn't allow your IDE to know the type of value received, nor offer you any help remembering/typing key names.
+Most [Dependency Injection](http://www.mrclay.org/2014/04/06/dependency-injection-ask-for-what-you-need/) containers have fetch operations, like `$di->get('foo')` or `$di['foo']`, which don't allow your IDE to know the type of value received, nor offer you any help remembering/typing key names.
 
-With **Props**, you subclass the container and provide `@property` PHPDoc declarations for the values that will be available at runtime. This gives you the benefits of static analysis/code completion via your IDE and other tools in a dynamic, lazy-loading environment.
+With **Props**, you access values via a property read: `$di->foo`. No big deal until you subclass the container and provide `@property` PHPDoc declarations for the values that will be available at runtime. Then you get the benefits of static analysis/code completion via your IDE and other tools in a dynamic, lazy-loading environment.
 
 An example will help:
+
+```php
+/**
+ * @property-read Foo $foo
+ */
+class MyDI extends \Props\Container {
+    public function __construct() {
+        $this->foo = new Foo();
+    }
+}
+
+$di = new MyDI();
+$di->foo; // your IDE knows this is a Foo instance
+```
+
+In a more complex example, we show how anonymous functions are used as factories:
 
 ```php
 /**
@@ -40,14 +56,19 @@ class MyDI extends \Props\Container {
 
 $di = new MyDI;
 
-// You can request dependencies in any order. They're resolved as needed.
+$di->pizza; // This first resolves and caches the cheese and dough.
 
-$di->new_slice(); // This first resolves and caches the cheese, dough, and pizza.
-
-$di->pizza; // Your IDE recognizes this as a Pizza object!
+$di->pizza; // The same pizza instance as above
 ```
 
-Essentially your IDE sees the container as a plain old class of typed properties, allowing it to offer suggestions of available properties, autocomplete their names, and autocomplete the objects returned. It gives you much more power when providing static analysis and automated refactoring.
+Since "slice" has a factory function set, we can call `new_slice()` to get fresh instances from it:
+
+```php
+$di->new_slice(); // a new Slice instance
+$di->new_slice(); // a new Slice instance
+```
+
+Your IDE sees the container as a plain old class of typed properties, allowing it to offer suggestions of available properties, autocomplete their names, and autocomplete the objects returned. It gives you much more power when providing static analysis and automated refactoring.
 
 ## Compatibility
 
