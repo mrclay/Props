@@ -49,6 +49,10 @@ $di->pizza; // Your IDE recognizes this as a Pizza object!
 
 Essentially your IDE sees the container as a plain old class of typed properties, allowing it to offer suggestions of available properties, autocomplete their names, and autocomplete the objects returned. It gives you much more power when providing static analysis and automated refactoring.
 
+## Compatibility
+
+`Props\Container` implements [`ContainerInterface`](https://github.com/container-interop/container-interop).
+
 ## Overview
 
 You can specify dependencies via direct setting:
