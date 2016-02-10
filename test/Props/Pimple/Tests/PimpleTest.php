@@ -235,11 +235,13 @@ class PimpleTest extends \PHPUnit_Framework_TestCase
         $pimple->foo = $pimple->extend('foo', function ($foo, $pimple) { return; });
         unset($pimple->foo);
 
-        $p = new \ReflectionProperty($pimple, 'values');
+        $class = new \ReflectionClass($pimple);
+        $class = $class->getParentClass();
+        $p = $class->getProperty('values');
         $p->setAccessible(true);
         $this->assertEmpty($p->getValue($pimple));
 
-        $p = new \ReflectionProperty($pimple, 'factories');
+        $p = $class->getProperty('factories');
         $p->setAccessible(true);
         $this->assertCount(0, $p->getValue($pimple));
     }
@@ -430,5 +432,21 @@ class PimpleTest extends \PHPUnit_Framework_TestCase
             return "$bar.baz";
         });
         $this->assertSame('bar.baz', $pimple->bar);
+    }
+
+    public function testNoPrivateAccess()
+    {
+        $check = new AccessCheck();
+        $this->assertTrue(isset($check['values']));
+        $this->assertEquals('values', $check['values']);
+    }
+}
+
+class AccessCheck extends Pimple {
+    function __construct()
+    {
+        $this->values = 'values';
+
+        parent::__construct();
     }
 }

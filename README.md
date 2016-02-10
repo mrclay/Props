@@ -150,9 +150,9 @@ $c->foo; // [Foo, "bing"]
 $c->new_foo(); // re-call original foo factory and re-extend output (`bar` and `bing` will be re-read)
 ```
 
-## Pimple port
+## Pimple with property access
 
-You can probably tell Props is influenced by [Pimple](http://pimple.sensiolabs.org/). If you're used to its API you can switch easily to `Props\Pimple`, which just uses property set/gets instead of ArrayAccess (it passes a port of Pimple's test suite as well). This lets you subclass and add `@property` declarations just like `Props\Container`.
+If you're used to the [Pimple](http://pimple.sensiolabs.org/) API, try `Props\Pimple`, which just adds property access. With that you can add `@property` declarations and get the same typing benefits.
 
 You can see an [example](https://github.com/mrclay/Props/blob/master/scripts/example-pimple.php) that's similar to the Pimple docs.
 
