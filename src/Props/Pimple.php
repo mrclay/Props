@@ -2,6 +2,8 @@
 
 namespace Props;
 
+use Pimple\ServiceProviderInterface;
+
 /*
  * This file is part of Pimple.
  *
@@ -110,10 +112,13 @@ class Pimple
             return $this->values[$id]($this);
         }
 
-        $this->frozen[$id] = true;
-        $this->raw[$id] = $this->values[$id];
+        $raw = $this->values[$id];
+        $val = $this->values[$id] = $raw($this);
+        $this->raw[$id] = $raw;
 
-        return $this->values[$id] = $this->values[$id]($this);
+        $this->frozen[$id] = true;
+
+        return $val;
     }
 
     /**
@@ -155,7 +160,7 @@ class Pimple
      */
     public function factory($callable)
     {
-        if (!is_object($callable) || !method_exists($callable, '__invoke')) {
+        if (!method_exists($callable, '__invoke')) {
             throw new \InvalidArgumentException('Service definition is not a Closure or invokable object.');
         }
 
@@ -177,7 +182,7 @@ class Pimple
      */
     public function protect($callable)
     {
-        if (!is_object($callable) || !method_exists($callable, '__invoke')) {
+        if (!method_exists($callable, '__invoke')) {
             throw new \InvalidArgumentException('Callable is not a Closure or invokable object.');
         }
 
@@ -258,5 +263,22 @@ class Pimple
     public function keys()
     {
         return array_keys($this->values);
+    }
+
+    /**
+     * Registers a service provider.
+     *
+     * @param ServiceProviderInterface $provider A ServiceProviderInterface instance
+     * @param array                    $values   An array of values that customizes the provider
+     *
+     * @return static
+     */
+    public function register(ServiceProviderInterface $provider, array $values = array())
+    {
+        $provider->register($this);
+        foreach ($values as $key => $value) {
+            $this[$key] = $value;
+        }
+        return $this;
     }
 }

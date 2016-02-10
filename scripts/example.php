@@ -22,7 +22,7 @@ function get_a_bbb() { return new BBB; }
  *
  * @method AAA new_aaa()
  */
-class MyDI extends \Props\Container {
+class MyContainer extends \Props\Container {
     public function __construct() {
         // store plain old values
         $this->ddd = new DDD;
@@ -34,7 +34,7 @@ class MyDI extends \Props\Container {
         };
 
         // alternative factory syntax, and using a reference to specify the class name
-        $this->setFactory('bbb1', function (MyDI $c) {
+        $this->setFactory('bbb1', function (MyContainer $c) {
             return new $c->{'bbb.class'};
         });
 
@@ -42,12 +42,12 @@ class MyDI extends \Props\Container {
         $this->setFactory('bbb2', 'get_a_bbb');
 
         // Closures automatically used as factories
-        $this->bbb3 = function (MyDI $c) {
+        $this->bbb3 = function (MyContainer $c) {
             return $c->bbb2;
         };
 
         // more advanced factory
-        $this->ccc = function (MyDI $c) {
+        $this->ccc = function (MyContainer $c) {
             $val = new CCC($c->bbb1);
             $val->setBbb($c->bbb2);
             $val->aaa = $c->aaa;
@@ -56,16 +56,16 @@ class MyDI extends \Props\Container {
     }
 }
 
-$di = new MyDI;
+$c = new MyContainer;
 
-$di->aaa; // factory builds a AAA
-$di->aaa; // the same AAA
-$di->new_aaa(); // always a freshly-built AAA
+$c->aaa; // factory builds a AAA
+$c->aaa; // the same AAA
+$c->new_aaa(); // always a freshly-built AAA
 
-$di->bbb1; // factory resolves bar.class, builds a BBB
-$di->bbb2; // invoker calls get_a_bbb()
-$di->bbb3; // invoker executes anon func, returning the already-cached $di->bbb2 instance
+$c->bbb1; // factory resolves bar.class, builds a BBB
+$c->bbb2; // invoker calls get_a_bbb()
+$c->bbb3; // invoker executes anon func, returning the already-cached $c->bbb2 instance
 
-$di->ccc; // factory creates CCC, passing a new BBB object,
-          // calls setBbb(), passing in $di->bbb2,
-          // and sets the aaa property to $di->aaa
+$c->ccc; // factory creates CCC, passing a new BBB object,
+          // calls setBbb(), passing in $c->bbb2,
+          // and sets the aaa property to $c->aaa
