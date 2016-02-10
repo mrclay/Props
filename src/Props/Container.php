@@ -138,18 +138,77 @@ class Container implements ContainerInterface
     /**
      * Set a factory to generate a value when the container is read.
      *
-     * @param string   $name     The name of the value
-     * @param callable $callable Factory for the value
+     * @param string   $name    The name of the value
+     * @param callable $factory Factory for the value
      * @throws FactoryUncallableException
      */
-    public function setFactory($name, $callable)
+    public function setFactory($name, $factory)
     {
-        if (!is_callable($callable, true)) {
+        if (!is_callable($factory, true)) {
             throw new FactoryUncallableException('$factory must appear callable');
         }
 
         unset($this->cache[$name]);
-        $this->factories[$name] = $callable;
+        $this->factories[$name] = $factory;
+    }
+
+    /**
+     * Get an already-set factory callable (Closure, invokable, or callback)
+     *
+     * @param string $name The name of the value
+     * @return callable
+     * @throws NotFoundException
+     */
+    public function getFactory($name)
+    {
+        if (!array_key_exists($name, $this->factories)) {
+            throw new NotFoundException("No factory available for: $name");
+        }
+
+        return $this->factories[$name];
+    }
+
+    /**
+     * Add a function that gets applied to the return value of an existing factory
+     *
+     * @note A cached value (from a previous property read) will thrown away. The next property read
+     *       (and all new_NAME() calls) will call the original factory.
+     *
+     * @param string   $name     The name of the value
+     * @param callable $extender Function that is applied to extend the returned value
+     * @return \Closure
+     * @throws FactoryUncallableException|NotFoundException
+     */
+    public function extend($name, $extender)
+    {
+        if (!is_callable($extender, true)) {
+            throw new FactoryUncallableException('$extender must appear callable');
+        }
+
+        if (!array_key_exists($name, $this->factories)) {
+            throw new NotFoundException("No factory available for: $name");
+        }
+
+        $factory = $this->factories[$name];
+
+        $newFactory = function (Container $c) use ($extender, $factory) {
+            return call_user_func($extender, call_user_func($factory, $c), $c);
+        };
+
+        $this->setFactory($name, $newFactory);
+
+        return $newFactory;
+    }
+
+    /**
+     * Get all keys available
+     *
+     * @return string[]
+     */
+    public function getKeys()
+    {
+        $keys = array_keys($this->cache) + array_keys($this->factories);
+        return array_unique($keys);
     }
 
     /**

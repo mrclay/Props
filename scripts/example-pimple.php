@@ -26,7 +26,7 @@ namespace PropsExample {
      * @property-read \Closure   $random
      * @property-read Zend_Mail $mail
      */
-    class MyDI2 extends \Props\Pimple {
+    class MyContainer2 extends \Props\Pimple {
         public function __construct() {
             parent::__construct();
 
@@ -34,42 +34,42 @@ namespace PropsExample {
 
             $this->session_storage_class = 'PropsExample\\SessionStorage';
 
-            $this->session_storage = function (MyDI2 $c) {
+            $this->session_storage = function (MyContainer2 $c) {
                 $class = $c->session_storage_class;
                 return new $class($c->cookie_name);
             };
 
-            $this->session = $this->factory(function (MyDI2 $c) {
+            $this->session = $this->factory(function (MyContainer2 $c) {
                 return new Session($c->session_storage);
             });
 
             $this->random = $this->protect(function () { return rand(); });
 
-            $this->mail = function (MyDI2 $c) {
+            $this->mail = function (MyContainer2 $c) {
                 return new Zend_Mail();
             };
 
             $this->{'mail.default_from'} = 'foo@example.com';
 
-            $this->extend('mail', function($mail, MyDI2 $c) {
+            $this->extend('mail', function($mail, MyContainer2 $c) {
                 $mail->setFrom($c->{'mail.default_from'});
                 return $mail;
             });
         }
     }
 
-    $di = new MyDI2;
+    $c = new MyContainer2;
 
-    $r1 = $di->random;
-    $r2 = $di->random;
+    $r1 = $c->random;
+    $r2 = $c->random;
 
     echo (int)($r1 === $r2) . "<br>";
 
     echo $r1() . "<br>";
 
-    echo get_class($di->raw('session')) . '<br>';
+    echo get_class($c->raw('session')) . '<br>';
 
-    echo var_export($di->session, true) . '<br>';
+    echo var_export($c->session, true) . '<br>';
 
-    echo var_export($di->mail, true) . '<br>';
+    echo var_export($c->mail, true) . '<br>';
 }

@@ -25,33 +25,31 @@ class MyDI extends \Props\Container {
     public function __construct() {
         $this->style = 'deluxe';
 
-        $this->dough = function (MyDI $c) {
+        $this->dough = function (MyContainer $c) {
             return new Dough();
         };
 
-        $this->cheese = function (MyDI $c) {
-            return CheeseFactory::getCheese();
-        };
+        $this->setFactory('cheese', 'CheeseFactory::getCheese');
 
-        $this->pizza = function (MyDI $c) {
+        $this->pizza = function (MyContainer $c) {
             $pizza = new Pizza($c->style, $c->cheese);
             $pizza->setDough($c->dough);
             return $pizza;
         };
 
         // note 3rd argument $shared is false
-        $this->slice = function (MyDI $c) {
+        $this->slice = function (MyContainer $c) {
             return $c->pizza->getSlice();
         };
     }
 }
 
-$di = new MyDI;
+$c = new MyContainer;
 
 // You can request dependencies in any order. They're resolved as needed.
 
-$slice1 = $di->new_slice(); // This first resolves and caches the cheese, dough, and pizza.
-$slice2 = $di->new_slice(); // This just gets a new slice from the existing pizza.
+$slice1 = $c->new_slice(); // This first resolves and caches the cheese, dough, and pizza.
+$slice2 = $c->new_slice(); // This just gets a new slice from the existing pizza.
 
 assert($slice1 !== $slice2);
-assert($di->pizza === $di->pizza);
+assert($c->pizza === $c->pizza);
