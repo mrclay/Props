@@ -276,8 +276,9 @@ class Pimple
     public function register(ServiceProviderInterface $provider, array $values = array())
     {
         $provider->register($this);
+
         foreach ($values as $key => $value) {
-            $this[$key] = $value;
+            $this->__set($key, $value);
         }
         return $this;
     }
