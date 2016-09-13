@@ -21,7 +21,12 @@
     },
     "autoload": {
         "psr-0": {
-            "Props\\": ["src/", "test/"]
+            "Props\\": ["src/"]
+        }
+    },
+    "autoload-dev": {
+        "psr-0": {
+            "Props\\": ["test/"]
         }
     }
 }
