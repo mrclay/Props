@@ -16,6 +16,7 @@ Desktop.ini
 # keep some hiddens
 !.htaccess
 !/.gitignore
+!/.gitattributes
 !/.travis.yml
 
 /composer.lock
