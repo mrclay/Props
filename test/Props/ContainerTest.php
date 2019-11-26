@@ -9,7 +9,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     public function testBasicInterop()
     {
         $di = new Container();
-        $this->assertInstanceOf('Interop\Container\ContainerInterface', $di);
+        $this->assertInstanceOf('Psr\Container\ContainerInterface', $di);
 
         $this->assertFalse($di->has('foo'));
         $di->foo = 'bar';
@@ -17,7 +17,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Interop\Container\Exception\NotFoundException
+     * @expectedException \Props\NotFoundException
      */
     public function testInteropNotFound()
     {
@@ -26,7 +26,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Interop\Container\Exception\ContainerException
+     * @expectedException \Psr\Container\ContainerExceptionInterface
      */
     public function testInteropException1()
     {
@@ -35,7 +35,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Interop\Container\Exception\ContainerException
+     * @expectedException \Psr\Container\ContainerExceptionInterface
      */
     public function testInteropException2()
     {
