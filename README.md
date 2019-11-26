@@ -78,7 +78,7 @@ Your IDE sees the container as a plain old class of typed properties, allowing i
 
 ## Compatibility
 
-`Props\Container` implements [`ContainerInterface`](https://github.com/container-interop/container-interop).
+`Props\Container` implements [`ContainerInterface`](https://github.com/php-fig/container/blob/master/src/ContainerInterface.php).
 
 ## Overview
 
