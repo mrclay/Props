@@ -31,7 +31,7 @@ class Container implements ContainerInterface
      * @return mixed
      * @throws FactoryUncallableException|ValueUnresolvableException|NotFoundException
      */
-    public function __get($name)
+    public function __get(string $name)
     {
         if (array_key_exists($name, $this->cache)) {
             return $this->cache[$name];
@@ -44,9 +44,9 @@ class Container implements ContainerInterface
     /**
      * {@inheritdoc}
      */
-    public function get($name)
+    public function get(string $id)
     {
-        return $this->__get($name);
+        return $this->__get($id);
     }
 
     /**
@@ -94,7 +94,7 @@ class Container implements ContainerInterface
      * @param string $name
      * @return bool
      */
-    public function __isset($name)
+    public function __isset(string $name)
     {
         return array_key_exists($name, $this->factories) || array_key_exists($name, $this->cache);
     }
@@ -102,9 +102,9 @@ class Container implements ContainerInterface
     /**
      * {@inheritdoc}
      */
-    public function has($name)
+    public function has(string $id): bool
     {
-        return $this->__isset($name);
+        return $this->__isset($id);
     }
 
     /**
