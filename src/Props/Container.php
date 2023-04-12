@@ -102,7 +102,7 @@ class Container implements ContainerInterface
     /**
      * {@inheritdoc}
      */
-    public function has($name)
+    public function has(string $name): bool
     {
         return $this->__isset($name);
     }
