@@ -2,7 +2,7 @@
 
 namespace Props;
 
-class ContainerTest extends \PHPUnit_Framework_TestCase
+class ContainerTest extends \PHPUnit\Framework\TestCase
 {
     const TEST_CLASS = 'Props\ContainerTestObject';
 
@@ -16,29 +16,23 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($di->has('foo'));
     }
 
-    /**
-     * @expectedException \Props\NotFoundException
-     */
     public function testInteropNotFound()
     {
+        $this->expectException('\Props\NotFoundException');
         $di = new Container();
         $di->get('foo');
     }
 
-    /**
-     * @expectedException \Psr\Container\ContainerExceptionInterface
-     */
     public function testInteropException1()
     {
+        $this->expectException('\Psr\Container\ContainerExceptionInterface');
         $di = new Container();
         $di->setFactory('foo', null);
     }
 
-    /**
-     * @expectedException \Psr\Container\ContainerExceptionInterface
-     */
     public function testInteropException2()
     {
+        $this->expectException('\Psr\Container\ContainerExceptionInterface');
         $di = new Container();
         $di->setFactory('foo', function () {
             throw new \Exception();
@@ -76,20 +70,16 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($di->hasFactory('foo'));
     }
 
-    /**
-     * @expectedException \Props\NotFoundException
-     */
     public function testReadMissingValue()
     {
+        $this->expectException('\Props\NotFoundException');
         $di = new Container();
         $di->foo;
     }
 
-    /**
-     * @expectedException \Props\NotFoundException
-     */
     public function testGetMissingValue()
     {
+        $this->expectException('\Props\NotFoundException');
         $di = new Container();
         $di->get('foo');
     }
@@ -99,7 +89,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $di = new Container();
         $di->foo = 'Foo';
 
-        $this->setExpectedException('Props\NotFoundException');
+        $this->expectException('Props\NotFoundException');
         $di->new_foo();
     }
 
@@ -180,7 +170,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $di->foo = 'Foo';
         unset($di->foo);
 
-        $this->setExpectedException('Props\NotFoundException');
+        $this->expectException('Props\NotFoundException');
         $di->foo;
     }
 
@@ -202,18 +192,16 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     public function testSetValue()
     {
         $di = new Container();
-        $di->setValue('foo', function () {});
+        $di->setValue('foo', function () { });
 
         $this->assertInstanceOf('Closure', $di->foo);
     }
 
-    /**
-     * @expectedException \Props\NotFoundException
-     */
     public function testCannotExtendValue()
     {
         $di = new Container();
         $di->foo = 1;
+        $this->expectException('\Props\NotFoundException');
         $di->extend('foo', function ($value, Container $c) {
             return $value + 1;
         });
@@ -227,7 +215,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $di->counter = function (Container $c) {
             static $i = 0;
             $i++;
-            return (object)array(
+            return (object) array(
                 $c->key => $i,
             );
         };
@@ -242,17 +230,17 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         });
 
         $c2 = $di->counter; // because of extension, doesn't use original cached value
-        $this->assertEquals((object)array('count' => 2, 'one' => 1), $c2);
+        $this->assertEquals((object) array('count' => 2, 'one' => 1), $c2);
         $this->assertNotSame($c1, $c2);
 
         $di->key = 'total';
 
         $c3 = $di->counter; // but caches repeat reads
-        $this->assertEquals((object)array('count' => 2, 'one' => 1), $c3);
+        $this->assertEquals((object) array('count' => 2, 'one' => 1), $c3);
         $this->assertSame($c2, $c3);
 
         $c4 = $di->new_counter();
-        $this->assertEquals((object)array('total' => 3, 'one' => 2), $c4);
+        $this->assertEquals((object) array('total' => 3, 'one' => 2), $c4);
         $this->assertNotSame($c3, $c4);
 
         $di->extend('counter', function ($value, Container $c) {
@@ -263,35 +251,31 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         });
 
         $c5 = $di->counter; // going deep!
-        $this->assertEquals((object)array('total' => 4, 'one' => 3, 'two' => 1), $c5);
+        $this->assertEquals((object) array('total' => 4, 'one' => 3, 'two' => 1), $c5);
 
         $c6 = $di->new_counter();
-        $this->assertEquals((object)array('total' => 5, 'one' => 4, 'two' => 2), $c6);
+        $this->assertEquals((object) array('total' => 5, 'one' => 4, 'two' => 2), $c6);
     }
 
-    /**
-     * @expectedException \Props\NotFoundException
-     */
     public function testGetFactoryForValue()
     {
         $di = new Container();
         $di->key = 'count';
+        $this->expectException('\Props\NotFoundException');
         $di->getFactory('key');
     }
 
-    /**
-     * @expectedException \Props\NotFoundException
-     */
     public function testGetMissingFactory()
     {
         $di = new Container();
+        $this->expectException('\Props\NotFoundException');
         $di->getFactory('key');
     }
 
     public function testGetFactory()
     {
         $di = new Container();
-        $factory = function () {};
+        $factory = function () { };
         $di->foo = $factory;
         $factory2 = $di->getFactory('foo');
         $this->assertSame($factory, $factory2);
@@ -301,7 +285,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     {
         $di = new Container();
         $di->foo = 'foo';
-        $di->bar = function () {};
+        $di->bar = function () { };
         $di->bar;
         $this->assertEquals(array('foo', 'bar'), $di->getKeys());
     }
