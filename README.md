@@ -1,4 +1,4 @@
-# Props [![Build Status](https://travis-ci.org/mrclay/Props.png)](https://travis-ci.org/mrclay/Props)
+# Props [![Build Status](https://github.com/mrclay/Props/actions/workflows/php.yml/badge.svg)](https://github.com/mrclay/Props/actions)
 
 Most [Dependency Injection](http://www.mrclay.org/2014/04/06/dependency-injection-ask-for-what-you-need/) containers have fetch operations, like `$di->get('foo')` or `$di['foo']`, which don't allow your IDE to know the type of value received, nor offer you any help remembering/typing key names.
 
