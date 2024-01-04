@@ -158,7 +158,7 @@ You can see an [example](https://github.com/mrclay/Props/blob/master/scripts/exa
 
 ## Requirements
 
- * PHP 5.3
+ * PHP 8.1
 
 ### License (MIT)
 
