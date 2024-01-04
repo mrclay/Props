@@ -13,9 +13,24 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php-versions:
+          ["7.4", "8.0", "8.1", "8.2", "8.3"]
 
+    name: PHP ${{ matrix.php-versions }} Test on ubantu-latest
     steps:
     - uses: actions/checkout@v3
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-versions }}
+        coverage: none
+        tools: composer, wp-cli, phpunit-polyfills:1.0
+      env:
+        COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Validate composer.json and composer.lock
       run: composer validate --strict
